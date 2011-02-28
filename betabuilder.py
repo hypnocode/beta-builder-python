@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import Foundation, shutil
+import Foundation, shutil, errno
 from zipfile import ZipFile
 from contextlib import closing
 from sys import argv
@@ -11,7 +11,7 @@ class HCZipFile(ZipFile):
     def find(self, name):
         candidates = [n for n in self.namelist() if n.split('/')[-1].lower().endswith(name)]
         if not candidates:
-            raise Exception, "couldn't find", name
+            raise Exception("couldn't find", name)
         return candidates[0]
     def dig_out(self, name):
         fh = self.open(self.find(name))
@@ -20,14 +20,15 @@ class HCZipFile(ZipFile):
         return result
 
 if len(argv) != 4:
-    raise Exception, 'ipa, url, publish dir'
+    print 'arguments: ipa, url, publish dir'
+    raise SystemExit
 ipa_name = argv[1]
 url = argv[2].rstrip('/')
 publish_dir = abspath(argv[3])
 try:
     makedirs(publish_dir)
-except OSError, e:
-    if e.errno == 17:
+except OSError as e:
+    if e.errno == errno.EEXIST:
         pass
     else:
         raise
