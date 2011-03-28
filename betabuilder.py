@@ -8,13 +8,22 @@ from os.path import abspath
 from os.path import join as path_join
 
 class HCZipFile(ZipFile):
-    def find(self, name):
-        candidates = [n for n in self.namelist() if n.split('/')[-1].lower().endswith(name)]
+    def find(self, name, level=2):
+        def at_pos(lst, pos):
+            #print "l: %s, p: %s" % (lst, pos)
+            return lst[pos] if len(lst) > pos else ""
+        best_candidates = [n for n in self.namelist() if at_pos(n.split('/'), level).lower() == name]
+        if best_candidates:
+            candidates = best_candidates
+        else:
+            candidates = [n for n in self.namelist() if at_pos(n.split('/'), level).endswith(name)]
         if not candidates:
             raise Exception("couldn't find", name)
+        #print 'candidates for %s at %s:' % (name, level)
+        #print candidates
         return candidates[0]
-    def dig_out(self, name):
-        fh = self.open(self.find(name))
+    def dig_out(self, name, level=2):
+        fh = self.open(self.find(name, level))
         result = fh.read()
         fh.close()
         return result
@@ -104,6 +113,7 @@ info_plist_dict = dict(url=url,
         bundle_id = ofk('CFBundleIdentifier'), 
         bundle_name = ofk('CFBundleName'),
         bundle_version = ofk('CFBundleVersion'))
+print info_plist_dict
 plist_out = plist_template % info_plist_dict
 o = lambda fn: open(path_join(publish_dir, fn), 'w')
 print "writing to", publish_dir
@@ -124,4 +134,5 @@ shutil.copy(ipa_name, path_join(publish_dir, 'application.ipa'))
 
 print app_archive
 print 'done'
+print url
 
