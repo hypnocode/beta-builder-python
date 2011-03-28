@@ -106,7 +106,7 @@ with closing(HCZipFile(ipa_name,'r')) as za:
     provision = za.dig_out('.mobileprovision')
     info_plist_s = za.dig_out('info.plist')
     info_plist_d = Foundation.NSData.dataWithBytes_length_(info_plist_s, len(info_plist_s))
-info_plist = Foundation.NSPropertyListSerialization.propertyListWithData_options_format_error_(info_plist_d, 0, None, None)
+info_plist = Foundation.NSPropertyListSerialization.propertyListWithData_options_format_error_(info_plist_d, 0, None)[0]
 
 ofk = lambda key:info_plist.objectForKey_(key)
 info_plist_dict = dict(url=url, 
